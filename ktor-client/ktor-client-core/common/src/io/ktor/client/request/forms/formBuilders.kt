@@ -91,6 +91,10 @@ suspend inline fun <reified T> HttpClient.submitFormWithBinaryData(
  *
  * [formParameters] encoded using application/x-www-form-urlencoded format.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.submitForm(
     scheme: String = "http",
     host: String = "localhost",
@@ -109,6 +113,10 @@ suspend inline fun <reified T> HttpClient.submitForm(
  * [formData] encoded using multipart/form-data format.
  * https://tools.ietf.org/html/rfc2045
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.submitFormWithBinaryData(
     scheme: String = "http",
     host: String = "localhost",

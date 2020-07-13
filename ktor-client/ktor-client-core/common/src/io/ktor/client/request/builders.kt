@@ -116,6 +116,10 @@ suspend inline fun <reified T> HttpClient.head(builder: HttpRequestBuilder): T {
  *
  * Tries to receive a specific type [T], if fails, an exception is thrown.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.get(
     scheme: String = "http", host: String = "localhost", port: Int = DEFAULT_PORT,
     path: String = "/",
@@ -134,6 +138,10 @@ suspend inline fun <reified T> HttpClient.get(
  *
  * Tries to receive a specific type [T], if fails, an exception is thrown.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.post(
     scheme: String = "http", host: String = "localhost", port: Int = DEFAULT_PORT,
     path: String = "/",
@@ -152,6 +160,10 @@ suspend inline fun <reified T> HttpClient.post(
  *
  * Tries to receive a specific type [T], if fails, an exception is thrown.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.put(
     scheme: String = "http", host: String = "localhost", port: Int = DEFAULT_PORT,
     path: String = "/",
@@ -170,6 +182,10 @@ suspend inline fun <reified T> HttpClient.put(
  *
  * Tries to receive a specific type [T], if fails, an exception is thrown.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.delete(
     scheme: String = "http", host: String = "localhost", port: Int = DEFAULT_PORT,
     path: String = "/",
@@ -188,6 +204,10 @@ suspend inline fun <reified T> HttpClient.delete(
  *
  * Tries to receive a specific type [T], if fails, an exception is thrown.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.patch(
     scheme: String = "http", host: String = "localhost", port: Int = DEFAULT_PORT,
     path: String = "/",
@@ -206,6 +226,10 @@ suspend inline fun <reified T> HttpClient.patch(
  *
  * Tries to receive a specific type [T], if fails, an exception is thrown.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.head(
     scheme: String = "http", host: String = "localhost", port: Int = DEFAULT_PORT,
     path: String = "/",
@@ -224,6 +248,10 @@ suspend inline fun <reified T> HttpClient.head(
  *
  * Tries to receive a specific type [T], if fails, an exception is thrown.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.options(
     scheme: String = "http", host: String = "localhost", port: Int = DEFAULT_PORT,
     path: String = "/",
@@ -247,6 +275,10 @@ fun request(block: HttpRequestBuilder.() -> Unit): HttpRequestBuilder = HttpRequ
  *
  * Tries to receive a specific type [T], if fails, an exception is thrown.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend inline fun <reified T> HttpClient.get(
     urlString: String,
     block: HttpRequestBuilder.() -> Unit = {}

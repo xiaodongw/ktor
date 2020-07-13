@@ -26,6 +26,10 @@ suspend fun HttpClient.webSocketSession(block: HttpRequestBuilder.() -> Unit): D
  * Open [DefaultClientWebSocketSession].
  */
 @OptIn(WebSocketInternalAPI::class)
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend fun HttpClient.webSocketSession(
     method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
     block: HttpRequestBuilder.() -> Unit = {}
@@ -61,6 +65,10 @@ suspend fun HttpClient.webSocket(
 /**
  * Open [block] with [DefaultClientWebSocketSession].
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend fun HttpClient.webSocket(
     method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
     request: HttpRequestBuilder.() -> Unit = {}, block: suspend DefaultClientWebSocketSession.() -> Unit
@@ -81,30 +89,41 @@ suspend fun HttpClient.webSocket(
     urlString: String,
     request: HttpRequestBuilder.() -> Unit = {}, block: suspend DefaultClientWebSocketSession.() -> Unit
 ) {
-    webSocket(
-        HttpMethod.Get, "localhost", DEFAULT_PORT, "/", {
-            url.protocol = URLProtocol.WS
-            url.port = port
+    webSocket({
+        url.takeFrom(urlString)
+        request()
+    }, block)
+}
 
-            url.takeFrom(urlString)
-            request()
-        }, block
-    )
+/**
+ * Open [block] with [DefaultClientWebSocketSession].
+ */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
+suspend fun HttpClient.ws(
+    method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
+    request: HttpRequestBuilder.() -> Unit = {}, block: suspend DefaultClientWebSocketSession.() -> Unit
+): Unit {
+    webSocket({
+        this.method = method
+        url {
+            this.host = host
+            this.port = port
+            encodedPath = path
+        }
+
+        request()
+    }, block)
 }
 
 /**
  * Open [block] with [DefaultClientWebSocketSession].
  */
 suspend fun HttpClient.ws(
-    method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
-    request: HttpRequestBuilder.() -> Unit = {}, block: suspend DefaultClientWebSocketSession.() -> Unit
-): Unit = webSocket(method, host, port, path, request, block)
-
-/**
- * Open [block] with [DefaultClientWebSocketSession].
- */
-suspend fun HttpClient.ws(
-    request: HttpRequestBuilder.() -> Unit, block: suspend DefaultClientWebSocketSession.() -> Unit
+    request: HttpRequestBuilder.() -> Unit,
+    block: suspend DefaultClientWebSocketSession.() -> Unit
 ): Unit = webSocket(request, block)
 
 /**
@@ -120,7 +139,8 @@ suspend fun HttpClient.ws(
  * Open [block] with secure [DefaultClientWebSocketSession].
  */
 suspend fun HttpClient.wss(
-    request: HttpRequestBuilder.() -> Unit, block: suspend DefaultClientWebSocketSession.() -> Unit
+    request: HttpRequestBuilder.() -> Unit,
+    block: suspend DefaultClientWebSocketSession.() -> Unit
 ): Unit = webSocket(
     {
         url.protocol = URLProtocol.WSS
@@ -134,7 +154,8 @@ suspend fun HttpClient.wss(
  */
 suspend fun HttpClient.wss(
     urlString: String,
-    request: HttpRequestBuilder.() -> Unit = {}, block: suspend DefaultClientWebSocketSession.() -> Unit
+    request: HttpRequestBuilder.() -> Unit = {},
+    block: suspend DefaultClientWebSocketSession.() -> Unit
 ): Unit = wss(
     {
         url.takeFrom(urlString)
@@ -145,6 +166,10 @@ suspend fun HttpClient.wss(
 /**
  * Open [block] with secure [DefaultClientWebSocketSession].
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend fun HttpClient.wss(
     method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
     request: HttpRequestBuilder.() -> Unit = {}, block: suspend DefaultClientWebSocketSession.() -> Unit
@@ -156,4 +181,3 @@ suspend fun HttpClient.wss(
         request()
     }, block = block
 )
-

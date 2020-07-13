@@ -12,6 +12,10 @@ import io.ktor.http.cio.websocket.*
 /**
  * Create raw [ClientWebSocketSession]: no ping-pong and other service messages are used.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend fun HttpClient.webSocketRawSession(
     method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
     block: HttpRequestBuilder.() -> Unit = {}
@@ -24,10 +28,25 @@ suspend fun HttpClient.webSocketRawSession(
 /**
  * Create raw [ClientWebSocketSession]: no ping-pong and other service messages are used.
  */
+suspend fun HttpClient.webSocketRawSession(
+    urlString: String,
+    block: HttpRequestBuilder.() -> Unit = {}
+): ClientWebSocketSession = request {
+    url.takeFrom(urlString)
+    block()
+}
+
+/**
+ * Create raw [ClientWebSocketSession]: no ping-pong and other service messages are used.
+ */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend fun HttpClient.webSocketRaw(
     method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
     request: HttpRequestBuilder.() -> Unit = {}, block: suspend ClientWebSocketSession.() -> Unit
-): Unit {
+) {
     val session = webSocketRawSession(method, host, port, path) {
         url.protocol = URLProtocol.WS
         url.port = port
@@ -47,11 +66,51 @@ suspend fun HttpClient.webSocketRaw(
 /**
  * Create raw [ClientWebSocketSession]: no ping-pong and other service messages are used.
  */
+suspend fun HttpClient.webSocketRaw(
+    urlString: String,
+    request: HttpRequestBuilder.() -> Unit = {},
+    block: suspend ClientWebSocketSession.() -> Unit
+) {
+    val session = webSocketRawSession(urlString) {
+        url.protocol = URLProtocol.WS
+        url.port = port
+
+        request()
+    }
+
+    try {
+        session.block()
+    } catch (cause: Throwable) {
+        session.closeExceptionally(cause)
+    } finally {
+        session.close()
+    }
+}
+
+
+/**
+ * Create raw [ClientWebSocketSession]: no ping-pong and other service messages are used.
+ */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend fun HttpClient.wsRaw(
     method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
     request: HttpRequestBuilder.() -> Unit = {}, block: suspend ClientWebSocketSession.() -> Unit
-): Unit = webSocketRaw(method, host, port, path, request, block)
+) {
+    webSocketRaw(method, host, port, path, request, block)
+}
 
+
+/**
+ * Create raw [ClientWebSocketSession]: no ping-pong and other service messages are used.
+ */
+suspend fun HttpClient.wsRaw(
+    urlString: String,
+    request: HttpRequestBuilder.() -> Unit = {},
+    block: suspend ClientWebSocketSession.() -> Unit
+): Unit = webSocketRaw(urlString, request, block)
 
 /**
  * Open [DefaultClientWebSocketSession].
@@ -68,10 +127,28 @@ suspend fun HttpClient.ws(
 /**
  * Create secure raw [ClientWebSocketSession]: no ping-pong and other service messages are used.
  */
+@Deprecated(
+    "Builders with parameter enumerations are deprecated. Consider using builder with url string and [block] builder instead.",
+    level = DeprecationLevel.WARNING
+)
 suspend fun HttpClient.wssRaw(
     method: HttpMethod = HttpMethod.Get, host: String = "localhost", port: Int = DEFAULT_PORT, path: String = "/",
     request: HttpRequestBuilder.() -> Unit = {}, block: suspend ClientWebSocketSession.() -> Unit
 ): Unit = webSocketRaw(method, host, port, path, request = {
+    url.protocol = URLProtocol.WSS
+    url.port = port
+
+    request()
+}, block = block)
+
+
+/**
+ * Create secure raw [ClientWebSocketSession]: no ping-pong and other service messages are used.
+ */
+suspend fun HttpClient.wssRaw(
+    urlString: String,
+    request: HttpRequestBuilder.() -> Unit = {}, block: suspend ClientWebSocketSession.() -> Unit
+): Unit = webSocketRaw(urlString, request = {
     url.protocol = URLProtocol.WSS
     url.port = port
 
