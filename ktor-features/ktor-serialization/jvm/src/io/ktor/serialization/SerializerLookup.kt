@@ -13,7 +13,7 @@ import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
 
 @OptIn(
-    ImplicitReflectionSerializer::class, ExperimentalStdlibApi::class
+    ExperimentalStdlibApi::class
 )
 internal fun serializerByTypeInfo(type: KType): KSerializer<*> {
     val classifierClass = type.classifier as? KClass<*>
@@ -38,7 +38,7 @@ private fun arraySerializer(type: KType): KSerializer<*> {
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR")
-internal fun serializerForSending(value: Any, module: SerialModule): KSerializer<*> = when (value) {
+internal fun serializerForSending(value: Any, module: SerializersModule): KSerializer<*> = when (value) {
     is JsonElement -> JsonElementSerializer
     is List<*> -> ListSerializer(value.elementSerializer(module))
     is Set<*> -> SetSerializer(value.elementSerializer(module))
@@ -62,7 +62,7 @@ internal fun serializerForSending(value: Any, module: SerialModule): KSerializer
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR")
-private fun Collection<*>.elementSerializer(module: SerialModule): KSerializer<*> {
+private fun Collection<*>.elementSerializer(module: SerializersModule): KSerializer<*> {
     val serializers = mapNotNull { value ->
         value?.let { serializerForSending(it, module) }
     }.distinctBy { it.descriptor.serialName }
