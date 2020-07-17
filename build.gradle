@@ -78,7 +78,8 @@ ext.skipPublish = ["ktor-server-benchmarks", "ktor-client-benchmarks"]
 ext.nonDefaultProjectStructure = ["ktor-bom"]
 
 def projectNeedsPlatform(project, platform) {
-    if (rootProject.ext.skipPublish.contains(project.name)) return platform == "jvm"
+    return platform == "jvm"
+
 
     def files = project.projectDir.listFiles()
     def hasPosix = files.any { it.name == "posix" }

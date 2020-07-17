@@ -36,11 +36,11 @@ kotlin {
 //                runtimeOnly(project(":ktor-client:ktor-client-jetty"))
             }
         }
-        jsTest {
-            dependencies {
-                api(project(":ktor-client:ktor-client-js"))
-            }
-        }
+//        jsTest {
+//            dependencies {
+//                api(project(":ktor-client:ktor-client-js"))
+//            }
+//        }
 
 //        if (!ideaActive) {
 //            configure(listOf(getByName("macosX64Test"), getByName("iosX64Test"))) {

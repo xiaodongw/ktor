@@ -1,15 +1,15 @@
 kotlin {
     targets {
-        configure(project.ext.nativeTargets) {
-            compilations.main.cinterops {
-                bits { defFile = file("posix/interop/bits.def") }
-                sockets { defFile = file("posix/interop/sockets.def") }
-            }
-
-            compilations.test.cinterops {
-                testSockets { defFile = file("posix/interop/testSockets.def") }
-            }
-        }
+//        configure(project.ext.nativeTargets) {
+//            compilations.main.cinterops {
+//                bits { defFile = file("posix/interop/bits.def") }
+//                sockets { defFile = file("posix/interop/sockets.def") }
+//            }
+//
+//            compilations.test.cinterops {
+//                testSockets { defFile = file("posix/interop/testSockets.def") }
+//            }
+//        }
     }
     sourceSets.commonTest.dependencies {
         api project(":ktor-test-dispatcher")
@@ -27,10 +27,10 @@ kotlin.sourceSets {
     }
 }
 
-if (!project.ext.ideaActive) {
-    apply from: "$rootDir/gradle/interop-as-source-set-klib.gradle"
-    afterEvaluate {
-        registerInteropAsSourceSetOutput("bits", kotlin.sourceSets.bitsMain)
-        registerInteropAsSourceSetOutput("sockets", kotlin.sourceSets.socketsMain)
-    }
-}
+//if (!project.ext.ideaActive) {
+//    apply from: "$rootDir/gradle/interop-as-source-set-klib.gradle"
+//    afterEvaluate {
+//        registerInteropAsSourceSetOutput("bits", kotlin.sourceSets.bitsMain)
+//        registerInteropAsSourceSetOutput("sockets", kotlin.sourceSets.socketsMain)
+//    }
+//}

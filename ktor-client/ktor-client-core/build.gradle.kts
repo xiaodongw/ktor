@@ -23,13 +23,13 @@ kotlin.sourceSets {
         }
     }
 
-    jsMain {
-        dependencies {
-            api(npm("node-fetch", node_fetch_version))
-            api(npm("abort-controller", abort_controller_version))
-            api(npm("ws", ws_version))
-        }
-    }
+//    jsMain {
+//        dependencies {
+//            api(npm("node-fetch", node_fetch_version))
+//            api(npm("abort-controller", abort_controller_version))
+//            api(npm("ws", ws_version))
+//        }
+//    }
 
     commonTest {
         dependencies {

@@ -14,11 +14,11 @@ kotlin.sourceSets {
             api(project(":ktor-client:ktor-client-features:ktor-client-logging"))
         }
     }
-    jsTest {
-        dependencies {
-            api(project(":ktor-client:ktor-client-js"))
-        }
-    }
+//    jsTest {
+//        dependencies {
+//            api(project(":ktor-client:ktor-client-js"))
+//        }
+//    }
     jvmTest {
         dependencies {
             api(project(":ktor-client:ktor-client-cio"))

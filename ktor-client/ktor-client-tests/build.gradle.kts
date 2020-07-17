@@ -74,31 +74,31 @@ kotlin.sourceSets {
 //            runtimeOnly(project(":ktor-client:ktor-client-jetty"))
         }
     }
-    jsTest {
-        dependencies {
-            api(project(":ktor-client:ktor-client-js"))
-        }
-    }
+//    jsTest {
+//        dependencies {
+//            api(project(":ktor-client:ktor-client-js"))
+//        }
+//    }
 
-    if (!ideaActive) {
-        listOf("linuxX64Test", "mingwX64Test", "macosX64Test").map { getByName(it) }.forEach {
-            it.dependencies {
-                // api(project(":ktor-client:ktor-client-curl"))
-            }
-        }
-        listOf("iosX64Test", "macosX64Test").map { getByName(it) }.forEach {
-            it.dependencies {
-                // api(project(":ktor-client:ktor-client-ios"))
-            }
-        }
-    } else {
-        posixTest {
-            dependencies {
-                // api(project(":ktor-client:ktor-client-ios"))
-                // api(project(":ktor-client:ktor-client-curl"))
-            }
-        }
-    }
+//    if (!ideaActive) {
+//        listOf("linuxX64Test", "mingwX64Test", "macosX64Test").map { getByName(it) }.forEach {
+//            it.dependencies {
+//                // api(project(":ktor-client:ktor-client-curl"))
+//            }
+//        }
+//        listOf("iosX64Test", "macosX64Test").map { getByName(it) }.forEach {
+//            it.dependencies {
+//                // api(project(":ktor-client:ktor-client-ios"))
+//            }
+//        }
+//    } else {
+//        posixTest {
+//            dependencies {
+//                // api(project(":ktor-client:ktor-client-ios"))
+//                // api(project(":ktor-client:ktor-client-curl"))
+//            }
+//        }
+//    }
 }
 
 val startTestServer = task<KtorTestServer>("startTestServer") {
@@ -111,16 +111,16 @@ val startTestServer = task<KtorTestServer>("startTestServer") {
 
 val testTasks = mutableListOf(
     "jvmTest",
-    "jvmBenchmark",
+    "jvmBenchmark"
 
     // 1.4.x JS tasks
-    "jsLegacyNodeTest",
-    "jsIrNodeTest",
-    "jsLegacyBrowserTest",
-    "jsIrBrowserTest",
+//    "jsLegacyNodeTest",
+//    "jsIrNodeTest",
+//    "jsLegacyBrowserTest",
+//    "jsIrBrowserTest",
 
-    "posixTest",
-    "darwinTest"
+//    "posixTest",
+//    "darwinTest"
 )
 
 if (!ideaActive) {
