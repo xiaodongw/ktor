@@ -33,6 +33,7 @@ class DigestProviderTest {
     @BeforeTest
     fun setup() {
         if (PlatformUtils.IS_NATIVE) return
+
         val params = ParametersBuilder(1)
         params.append(paramName, paramValue)
         requestBuilder =
@@ -40,31 +41,27 @@ class DigestProviderTest {
     }
 
     @Test
-    fun addRequestHeadersSetsExpectedAuthHeaderFields() {
-        if (PlatformUtils.IS_NATIVE) return
+    fun addRequestHeadersSetsExpectedAuthHeaderFields() = testSuspend {
+        if (PlatformUtils.IS_NATIVE) return@testSuspend
 
         runIsApplicable(authAllFields)
-        testSuspend {
-            val authHeader = addRequestHeaders()
+        val authHeader = addRequestHeaders()
 
-            assertTrue(authHeader.contains("qop=qop"))
-            assertTrue(authHeader.contains("opaque=opaque"))
-            checkStandardFields(authHeader)
-        }
+        assertTrue(authHeader.contains("qop=qop"))
+        assertTrue(authHeader.contains("opaque=opaque"))
+        checkStandardFields(authHeader)
     }
 
     @Test
-    fun addRequestHeadersOmitsQopAndOpaqueWhenMissing() {
-        if (PlatformUtils.IS_NATIVE) return
+    fun addRequestHeadersOmitsQopAndOpaqueWhenMissing() = testSuspend {
+        if (PlatformUtils.IS_NATIVE) return@testSuspend
 
         runIsApplicable(authMissingQopAndOpaque)
-        testSuspend {
-            val authHeader = addRequestHeaders()
+        val authHeader = addRequestHeaders()
 
-            assertFalse(authHeader.contains("opaque="))
-            assertFalse(authHeader.contains("qop="))
-            checkStandardFields(authHeader)
-        }
+        assertFalse(authHeader.contains("opaque="))
+        assertFalse(authHeader.contains("qop="))
+        checkStandardFields(authHeader)
     }
 
     private fun runIsApplicable(headerValue: String) =
