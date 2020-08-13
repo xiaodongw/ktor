@@ -37,7 +37,7 @@ private fun arraySerializer(type: KType): KSerializer<*> {
 
 @OptIn(InternalSerializationApi::class)
 internal fun serializerForSending(value: Any, module: SerializersModule): KSerializer<*> = when (value) {
-    is JsonElement -> JsonElementSerializer
+    is JsonElement -> JsonElement.serializer()
     is List<*> -> ListSerializer(value.elementSerializer(module))
     is Set<*> -> SetSerializer(value.elementSerializer(module))
     is Map<*, *> -> MapSerializer(value.keys.elementSerializer(module), value.values.elementSerializer(module))
