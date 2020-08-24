@@ -7,15 +7,7 @@ kotlin {
         if (project.ext.ideaActive) {
             fromPreset(project.ext.ideaPreset, 'darwin')
         } else {
-            fromPreset(presets.iosArm64, 'iosArm64')
-            fromPreset(presets.iosArm32, 'iosArm32')
-            fromPreset(presets.iosX64, 'iosX64')
-            fromPreset(presets.macosX64, 'macosX64')
-            fromPreset(presets.tvosArm64, 'tvosArm64')
-            fromPreset(presets.tvosX64, 'tvosX64')
-            fromPreset(presets.watchosArm32, 'watchosArm32')
-            fromPreset(presets.watchosArm64, 'watchosArm64')
-            fromPreset(presets.watchosX86, 'watchosX86')
+
         }
     }
     sourceSets {

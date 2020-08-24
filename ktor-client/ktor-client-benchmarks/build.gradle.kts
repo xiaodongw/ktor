@@ -2,7 +2,7 @@ import kotlinx.benchmark.gradle.*
 
 plugins {
     id("kotlinx.benchmark")
-    id("kotlin-allopen")
+    kotlin("plugin.allopen") version kotlin_version
     id("kotlinx-atomicfu")
 }
 

@@ -1,8 +1,10 @@
 
-kotlin.sourceSets {
-    val commonMain by getting {
-        dependencies {
-            api(project(":ktor-client:ktor-client-core"))
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(project(":ktor-client:ktor-client-core"))
+            }
         }
     }
 }

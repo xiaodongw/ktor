@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*
 
-val ideaActive: Boolean by project.extra
+//val ideaActive: Boolean by project.extra
 val serialization_version: String by project.extra
 
 plugins {
@@ -15,13 +15,17 @@ kotlin {
         (this as NamedDomainObjectCollection<KotlinTarget>)
 
         val current = mutableListOf<KotlinTarget>()
-        if (ideaActive) {
-            current.add(getByName("posix"))
-        } else {
-            current.addAll(listOf(getByName("macosX64"), getByName("linuxX64"), getByName("mingwX64")))
-        }
+//        if (ideaActive) {
+//            current.add(getByName("posix"))
+//        } else {
+//        current.addAll(listOf(getByName("macosX64"), getByName("linuxX64"), getByName("mingwX64")))
+//        }
 
-        val paths = listOf("C:/msys64/mingw64/include/curl", "C:/Tools/msys64/mingw64/include/curl", "C:/Tools/msys2/mingw64/include/curl")
+        val paths = listOf(
+            "C:/msys64/mingw64/include/curl",
+            "C:/Tools/msys64/mingw64/include/curl",
+            "C:/Tools/msys2/mingw64/include/curl"
+        )
         current.filterIsInstance<KotlinNativeTarget>().forEach { platform ->
             platform.compilations.getByName("main") {
                 val libcurl by cinterops.creating {
@@ -49,7 +53,10 @@ kotlin {
                     afterEvaluate {
                         if (platform.name == "mingwX64") {
                             val winTests = tasks.getByName("mingwX64Test") as KotlinNativeTest
-                            winTests.environment("PATH", "c:\\msys64\\mingw64\\bin;c:\\tools\\msys64\\mingw64\\bin;C:\\Tools\\msys2\\mingw64\\bin")
+                            winTests.environment(
+                                "PATH",
+                                "c:\\msys64\\mingw64\\bin;c:\\tools\\msys64\\mingw64\\bin;C:\\Tools\\msys2\\mingw64\\bin"
+                            )
                         }
                     }
                 }
@@ -74,14 +81,14 @@ kotlin {
         }
 
         // Hack: register the Native interop klibs as outputs of Kotlin source sets:
-        if (!ideaActive) {
-            val libcurlInterop by creating
-            getByName("posixMain").dependsOn(libcurlInterop)
-            apply(from = "$rootDir/gradle/interop-as-source-set-klib.gradle")
-            (project.ext.get("registerInteropAsSourceSetOutput") as groovy.lang.Closure<*>).invoke(
-                "libcurl",
-                libcurlInterop
-            )
-        }
+//        if (!ideaActive) {
+//            val libcurlInterop by creating
+//            getByName("posixMain").dependsOn(libcurlInterop)
+//            apply(from = "$rootDir/gradle/interop-as-source-set-klib.gradle")
+//            (project.ext.get("registerInteropAsSourceSetOutput") as groovy.lang.Closure<*>).invoke(
+//                "libcurl",
+//                libcurlInterop
+//            )
+//        }
     }
 }

@@ -1,0 +1,17 @@
+description = ""
+
+kotlin.sourceSets {
+    jvmMain {
+        dependencies {
+            api(project(":ktor-server:ktor-server-core"))
+            api(project(":ktor-server:ktor-server-test-host"))
+        }
+    }
+
+    jvmTest {
+        dependencies {
+            api(project(":ktor-server:ktor-server-core"))
+            api(project(":ktor-server:ktor-server-core", configuration = "testOutput"))
+        }
+    }
+}

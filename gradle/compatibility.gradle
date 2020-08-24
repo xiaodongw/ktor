@@ -1,4 +1,4 @@
-apply plugin: 'binary-compatibility-validator'
+apply plugin: ''
 
 apiValidation {
     def excludeList = [
