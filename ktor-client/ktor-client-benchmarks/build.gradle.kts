@@ -3,7 +3,7 @@ import kotlinx.benchmark.gradle.*
 plugins {
     id("kotlinx.benchmark")
     id("kotlin-allopen")
-    id("kotlinx-atomicfu")
+//    id("kotlinx-atomicfu")
 }
 
 allOpen {
@@ -12,6 +12,7 @@ allOpen {
 
 val jmh_version by extra.properties
 val benchmarks_version by extra.properties
+val atomicfu_version by extra.properties
 
 kotlin {
     sourceSets {
@@ -19,6 +20,7 @@ kotlin {
             dependencies {
                 implementation(project(":ktor-client:ktor-client-core"))
                 implementation("org.jetbrains.kotlinx:kotlinx.benchmark.runtime:$benchmarks_version")
+                implementation("org.jetbrains.kotlinx:atomicfu-common:$atomicfu_version")
             }
         }
         val jvmMain by getting {

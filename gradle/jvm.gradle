@@ -8,7 +8,7 @@ if (project.name in project.ext.jdk8Modules) {
     jdk = 7
 }
 
-apply plugin: "kotlinx-atomicfu"
+//apply plugin: "kotlinx-atomicfu"
 
 kotlin {
     targets {
@@ -42,6 +42,9 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            api("org.jetbrains.kotlinx:atomicfu-common:$atomicfu_version")
+        }
         jvmMain.dependencies {
             api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
             if (jdk > 6) {
