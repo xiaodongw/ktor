@@ -43,7 +43,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api("org.jetbrains.kotlinx:atomicfu-common:$atomicfu_version")
+            implementation("org.jetbrains.kotlinx:atomicfu-common:$atomicfu_version")
         }
         jvmMain.dependencies {
             api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
