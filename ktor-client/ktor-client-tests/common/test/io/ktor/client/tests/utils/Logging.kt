@@ -63,6 +63,7 @@ internal class TestLogger(private vararg val expectedLog: String) : Logger {
         if (message.isNotEmpty()) {
             error(message)
         }
+        log.clear()
     }
 }
 

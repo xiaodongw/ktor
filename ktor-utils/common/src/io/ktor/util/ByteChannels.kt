@@ -18,17 +18,23 @@ private const val CHUNK_BUFFER_SIZE = 4096L
 public fun ByteReadChannel.split(coroutineScope: CoroutineScope): Pair<ByteReadChannel, ByteReadChannel> {
     val first = ByteChannel(autoFlush = true)
     val second = ByteChannel(autoFlush = true)
+    val test = ByteChannel(autoFlush = true)
 
+    println("SPLIT START")
     coroutineScope.launch {
+        println("SPLIT LAUNCH")
         try {
             while (!isClosedForRead) {
                 this@split.readRemaining(CHUNK_BUFFER_SIZE).use { chunk ->
+                    println("SPLIT READ")
                     listOf(
                         async { first.writePacket(chunk.copy()) },
                         async { second.writePacket(chunk.copy()) }
                     ).awaitAll()
+                    println("SPLIT READ AWAIT")
                 }
             }
+            println("SPLIT READ RESULT")
         } catch (cause: Throwable) {
             this@split.cancel(cause)
             first.cancel(cause)

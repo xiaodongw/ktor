@@ -379,6 +379,7 @@ class LoggingTest : ClientLoader() {
 
     @Test
     fun testRequestAndResponseBody() = clientTests(listOf("native:CIO")) {
+        repeatCount=10
         val testLogger = TestLogger(
             "REQUEST: http://127.0.0.1:8080/content/echo",
             "METHOD: HttpMethod(value=POST)",

@@ -226,7 +226,11 @@ public fun HttpClientConfig<*>.Logging(block: Logging.Config.() -> Unit = {}) {
 }
 
 internal suspend inline fun ByteReadChannel.tryReadText(charset: Charset): String? = try {
-    readRemaining().readText(charset = charset)
+    println("LOGGING READ TEXT")
+    val readText = readRemaining().readText(charset = charset)
+    println("LOGGING READ TEXT SUCCESS $readText")
+    readText
 } catch (cause: MalformedInputException) {
+    println("LOGGING READ TEXT fail")
     null
 }
