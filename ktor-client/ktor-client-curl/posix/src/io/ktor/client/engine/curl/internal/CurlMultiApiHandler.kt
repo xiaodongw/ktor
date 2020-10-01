@@ -226,10 +226,20 @@ internal class CurlMultiApiHandler : Closeable {
                         )
                     }
 
+                    val errorMessage = curl_easy_strerror(result)?.toKStringFromUtf8()
+
+                    if (result == CURLE_PEER_FAILED_VERIFICATION) {
+                        return CurlFail(
+                            request,
+                            @Suppress("DEPRECATION")
+                            CurlIllegalStateException("TLS verification failed for request: $request, $errorMessage")
+                        )
+                    }
+
                     return CurlFail(
                         request,
                         @Suppress("DEPRECATION")
-                        CurlIllegalStateException("Connection failed for request: $request")
+                        CurlIllegalStateException("Connection failed for request: $request, $errorMessage")
                     )
                 }
 
