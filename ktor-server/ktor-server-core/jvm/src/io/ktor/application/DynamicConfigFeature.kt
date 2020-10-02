@@ -18,7 +18,7 @@ public interface DynamicConfigFeature<in TPipeline : Pipeline<*, ApplicationCall
 
     @Deprecated(
         "This feature can change it's configurations by calling `config` function in routing. " +
-            "Please use `getConfiguration` inside call interceptor.",
+            "To get latest config please use `getConfiguration` function inside call interceptor.",
         replaceWith = ReplaceWith("install")
     )
     public override fun install(pipeline: TPipeline, configure: TConfiguration.() -> Unit): TFeature {

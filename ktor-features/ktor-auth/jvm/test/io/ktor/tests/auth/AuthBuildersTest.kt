@@ -353,27 +353,16 @@ class AuthBuildersTest {
             }
         }
 
-        on("add a new auth method") {
-            application.authentication {
+        application.routing {
+            config(Authentication, {
                 form("2") {
                     validate { it.name.takeIf { it == "bbb" }?.let { UserIdPrincipal(it) } }
                 }
-            }
-        }
-
-        on("auth method name conflict") {
-            application.authentication {
-                assertFails {
-                    basic("2") {
+            }) {
+                authenticate("1", "2") {
+                    get("/") {
+                        call.respondText(call.principal<UserIdPrincipal>()?.name ?: "?")
                     }
-                }
-            }
-        }
-
-        application.routing {
-            authenticate("1", "2") {
-                get("/") {
-                    call.respondText(call.principal<UserIdPrincipal>()?.name ?: "?")
                 }
             }
         }
@@ -399,6 +388,68 @@ class AuthBuildersTest {
             on("try invalid user name") {
                 val call = handleRequest(HttpMethod.Get, "/") {
                     addBasicAuth("unknown")
+                }
+                assertEquals(HttpStatusCode.Unauthorized.value, call.response.status()?.value)
+            }
+        }
+    }
+
+    @Test
+    fun testModifyingAuthenticationIndependentSubroutes() = withTestApplication {
+        application.authentication {}
+
+        application.routing {
+            config(Authentication, {
+                form("1") {
+                    validate { it.name.takeIf { it == "aaa" }?.let { UserIdPrincipal(it) } }
+                }
+            }) {
+                authenticate("1") {
+                    get("/first") {
+                        call.respondText(call.principal<UserIdPrincipal>()?.name ?: "?")
+                    }
+                }
+            }
+            config(Authentication, {
+                form("1") {
+                    validate { it.name.takeIf { it == "bbb" }?.let { UserIdPrincipal(it) } }
+                }
+            }) {
+                authenticate("1") {
+                    get("/second") {
+                        call.respondText(call.principal<UserIdPrincipal>()?.name ?: "?")
+                    }
+                }
+            }
+        }
+
+        on("attempt to auth") {
+            fun TestApplicationRequest.addFormAuth(name: String) {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+                setBody("user=$name&password=")
+            }
+            on("try first route valid name from first route") {
+                val call = handleRequest(HttpMethod.Get, "/first") {
+                    addFormAuth("aaa")
+                }
+                assertEquals("aaa", call.response.content)
+            }
+            on("try first route invalid name from second route") {
+                val call = handleRequest(HttpMethod.Get, "/first") {
+                    addBasicAuth("bbb")
+                }
+                assertEquals(HttpStatusCode.Unauthorized.value, call.response.status()?.value)
+            }
+
+            on("try second route valid name from second route") {
+                val call = handleRequest(HttpMethod.Get, "/second") {
+                    addFormAuth("bbb")
+                }
+                assertEquals("bbb", call.response.content)
+            }
+            on("try second route invalid name from first route") {
+                val call = handleRequest(HttpMethod.Get, "/second") {
+                    addBasicAuth("aaa")
                 }
                 assertEquals(HttpStatusCode.Unauthorized.value, call.response.status()?.value)
             }

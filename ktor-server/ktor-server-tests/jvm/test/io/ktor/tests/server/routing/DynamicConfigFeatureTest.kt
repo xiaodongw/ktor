@@ -13,7 +13,7 @@ import io.ktor.server.testing.*
 import io.ktor.util.*
 import kotlin.test.*
 
-class RoutingScopeFeatureTest {
+class DynamicConfigFeatureTest {
 
     @Test
     fun testFeatureScope() = withTestApplication {

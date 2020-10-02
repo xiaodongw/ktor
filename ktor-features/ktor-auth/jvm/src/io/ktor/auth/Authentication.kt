@@ -16,15 +16,7 @@ import org.slf4j.*
  *
  * @param config initial authentication configuration
  */
-public class Authentication(config: Configuration) {
-    /**
-     * @param providers list of registered instances of [AuthenticationProvider]
-     */
-    public constructor(providers: List<AuthenticationProvider>) : this(Configuration(providers))
-
-    public constructor() : this(Configuration())
-
-    private var config = config.copy()
+public class Authentication {
 
     private val logger = LoggerFactory.getLogger(Authentication::class.java)
 
@@ -57,28 +49,10 @@ public class Authentication(config: Configuration) {
             if (providers.any { it.name == providerName })
                 throw IllegalArgumentException("Provider with the name $providerName is already registered")
         }
-
-        internal fun copy(): Configuration = Configuration(providers)
     }
 
     private class LambdaProviderConfig(name: String?) : AuthenticationProvider.Configuration(name) {
         fun buildProvider() = AuthenticationProvider(this)
-    }
-
-    init {
-        config.providers.forEach { forEveryProvider(it.pipeline) }
-    }
-
-    /**
-     * Configure already installed feature
-     */
-    public fun configure(block: Configuration.() -> Unit) {
-        val newConfiguration = config.copy()
-        block(newConfiguration)
-        val added = newConfiguration.providers - config.providers
-
-        config = newConfiguration.copy()
-        added.forEach { forEveryProvider(it.pipeline) }
     }
 
     /**
@@ -93,25 +67,6 @@ public class Authentication(config: Configuration) {
     ) {
         require(configurationNames.isNotEmpty()) { "At least one configuration name or default listOf(null)" }
 
-        val configurations = configurationNames.map { configurationName ->
-            config.providers.firstOrNull { it.name == configurationName }
-                ?: throw IllegalArgumentException(
-                    if (configurationName == null)
-                        "Default authentication configuration was not found"
-                    else
-                        "Authentication configuration with the name $configurationName was not found"
-                )
-        }
-
-        val authenticationPipeline = when {
-            configurations.size == 1 -> configurations[0].pipeline
-            else -> AuthenticationPipeline().apply {
-                for (provider in configurations) {
-                    merge(provider.pipeline)
-                }
-            }
-        }
-
         pipeline.insertPhaseAfter(ApplicationCallPipeline.Features, AuthenticatePhase)
         pipeline.insertPhaseAfter(AuthenticatePhase, ChallengePhase)
 
@@ -120,7 +75,28 @@ public class Authentication(config: Configuration) {
             val authenticationContext = AuthenticationContext.from(call)
             if (authenticationContext.principal != null) return@intercept
 
-            processAuthentication(call, authenticationContext, configurations, authenticationPipeline)
+            val config = Configuration().apply(getConfiguration())
+            val configurations = configurationNames.map { configurationName ->
+                config.providers.firstOrNull { it.name == configurationName }
+                    ?: throw IllegalArgumentException(
+                        if (configurationName == null)
+                            "Default authentication configuration was not found"
+                        else
+                            "Authentication configuration with the name $configurationName was not found"
+                    )
+            }
+            configurations.forEach { installChallenge(it.pipeline) }
+
+            val authenticationPipeline = when {
+                configurations.size == 1 -> configurations[0].pipeline
+                else -> AuthenticationPipeline().apply {
+                    for (provider in configurations) {
+                        merge(provider.pipeline)
+                    }
+                }
+            }
+
+            processAuthentication(call, authenticationContext, configurations, authenticationPipeline!!)
         }
 
         pipeline.intercept(ChallengePhase) {
@@ -145,7 +121,7 @@ public class Authentication(config: Configuration) {
     /**
      * Installable feature for [Authentication].
      */
-    public companion object Feature : ApplicationFeature<Application, Configuration, Authentication> {
+    public companion object Feature : DynamicConfigFeature<Application, Configuration, Authentication> {
         /**
          * Authenticate phase in that authentication procedures are executed.
          * Please note that referring to the phase is only possible *after* feature installation.
@@ -162,14 +138,12 @@ public class Authentication(config: Configuration) {
 
         override val key: AttributeKey<Authentication> = AttributeKey("Authentication")
 
-        override fun install(pipeline: Application, configure: Configuration.() -> Unit): Authentication {
-            return Authentication().apply {
-                configure(configure)
-            }
+        override fun install(pipeline: Application): Authentication {
+            return Authentication()
         }
     }
 
-    private fun forEveryProvider(authenticationPipeline: AuthenticationPipeline) {
+    private fun installChallenge(authenticationPipeline: AuthenticationPipeline) {
         // Install challenging interceptor for every provider
         authenticationPipeline.intercept(AuthenticationPipeline.RequestAuthentication) { context ->
             val principal = context.principal
@@ -332,10 +306,8 @@ public class AuthenticationRouteSelector(public val names: List<String?>) : Rout
 
 /**
  * Installs [Authentication] feature if not yet installed and invokes [block] on it's config.
- * One is allowed to modify existing authentication configuration only in [authentication]'s block or
- * via [Authentication.configure] function.
  * Changing captured instance of configuration outside of [block] may have no effect or damage application's state.
  */
 public fun Application.authentication(block: Authentication.Configuration.() -> Unit) {
-    featureOrNull(Authentication)?.configure(block) ?: install(Authentication, block)
+    install(Authentication, block)
 }
