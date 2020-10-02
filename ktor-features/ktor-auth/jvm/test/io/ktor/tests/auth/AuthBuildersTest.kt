@@ -263,9 +263,11 @@ class AuthBuildersTest {
 
             val serializedSession = defaultSessionSerializer<TestSession>().serialize(TestSession("tester"))
             val sessionCookieContent = "S=$serializedSession"
+
             fun TestApplicationRequest.addCookie() {
                 addHeader(HttpHeaders.Cookie, sessionCookieContent)
             }
+
             fun TestApplicationRequest.addFormAuth(name: String, pass: String) {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
                 setBody("user=$name&password=$pass")
@@ -354,15 +356,15 @@ class AuthBuildersTest {
         }
 
         application.routing {
-            config(Authentication, {
+            config(Authentication) {
                 form("2") {
                     validate { it.name.takeIf { it == "bbb" }?.let { UserIdPrincipal(it) } }
                 }
-            }) {
-                authenticate("1", "2") {
-                    get("/") {
-                        call.respondText(call.principal<UserIdPrincipal>()?.name ?: "?")
-                    }
+            }
+
+            authenticate("1", "2") {
+                get("/") {
+                    call.respondText(call.principal<UserIdPrincipal>()?.name ?: "?")
                 }
             }
         }
@@ -399,24 +401,28 @@ class AuthBuildersTest {
         application.authentication {}
 
         application.routing {
-            config(Authentication, {
-                form("1") {
-                    validate { it.name.takeIf { it == "aaa" }?.let { UserIdPrincipal(it) } }
+            route("/first") {
+                config(Authentication) {
+                    form("1") {
+                        validate { it.name.takeIf { it == "aaa" }?.let { UserIdPrincipal(it) } }
+                    }
                 }
-            }) {
+
                 authenticate("1") {
-                    get("/first") {
+                    get {
                         call.respondText(call.principal<UserIdPrincipal>()?.name ?: "?")
                     }
                 }
             }
-            config(Authentication, {
-                form("1") {
-                    validate { it.name.takeIf { it == "bbb" }?.let { UserIdPrincipal(it) } }
+            route("/second") {
+                config(Authentication) {
+                    form("1") {
+                        validate { it.name.takeIf { it == "bbb" }?.let { UserIdPrincipal(it) } }
+                    }
                 }
-            }) {
+
                 authenticate("1") {
-                    get("/second") {
+                    get {
                         call.respondText(call.principal<UserIdPrincipal>()?.name ?: "?")
                     }
                 }

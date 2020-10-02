@@ -16,7 +16,7 @@ import kotlin.test.*
 class DynamicConfigFeatureTest {
 
     @Test
-    fun testFeatureScope() = withTestApplication {
+    fun testFeatureInstalledInRoutingScope() = withTestApplication {
         val callbackResults = mutableListOf<String>()
         val receiveCallbackResults = mutableListOf<String>()
         val sendCallbackResults = mutableListOf<String>()
@@ -39,14 +39,14 @@ class DynamicConfigFeatureTest {
 
                     route("inner") {
                         route("new-feature") {
-                            config(TestFeature, { name = "bar" }) {
-                                get("inner") {
-                                    call.respond(HttpStatusCode.OK)
-                                }
+                            config(TestFeature, { name = "bar" })
 
-                                handle {
-                                    call.respond(HttpStatusCode.OK)
-                                }
+                            get("inner") {
+                                call.respond(HttpStatusCode.OK)
+                            }
+
+                            handle {
+                                call.respond(HttpStatusCode.OK)
                             }
                         }
 

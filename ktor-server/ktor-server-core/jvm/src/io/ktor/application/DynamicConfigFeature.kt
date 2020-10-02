@@ -8,8 +8,6 @@ import io.ktor.routing.*
 import io.ktor.util.*
 import io.ktor.util.pipeline.*
 
-private val FeatureConfigPhase = PipelinePhase("FeatureConfigPhase")
-
 public interface DynamicConfigFeature<in TPipeline : Pipeline<*, ApplicationCall>, TConfiguration : Any, TFeature : Any> :
     ApplicationFeature<TPipeline, TConfiguration, TFeature> {
 
@@ -34,10 +32,9 @@ public interface DynamicConfigFeature<in TPipeline : Pipeline<*, ApplicationCall
 
 public fun <Config, Feature : DynamicConfigFeature<*, Config, *>> Route.config(
     feature: Feature,
-    configBuilder: Config.() -> Unit,
-    routeBuilder: Route.() -> Unit
-): Route {
-    val interceptor: suspend PipelineContext<*, ApplicationCall>.(Unit) -> Unit = {
+    configBuilder: Config.() -> Unit
+) {
+    intercept(ApplicationCallPipeline.Setup) {
         val oldConfig = call.attributes.getOrNull(feature.configKey)
         val newConfig = when (oldConfig) {
             null -> configBuilder
@@ -47,16 +44,6 @@ public fun <Config, Feature : DynamicConfigFeature<*, Config, *>> Route.config(
         }
         call.attributes.put(feature.configKey, newConfig)
     }
-
-    val configuredRoute = createChild(object : RouteSelector(RouteSelectorEvaluation.qualityConstant) {
-        override fun evaluate(context: RoutingResolveContext, segmentIndex: Int) = RouteSelectorEvaluation.Constant
-    })
-
-    configuredRoute.insertPhaseBefore(ApplicationCallPipeline.Features, FeatureConfigPhase)
-    configuredRoute.intercept(FeatureConfigPhase, interceptor)
-
-    routeBuilder(configuredRoute)
-    return configuredRoute
 }
 
 /**
@@ -73,8 +60,7 @@ public fun <P : Pipeline<*, ApplicationCall>, B : Any, F : Any> P.install(
                 @Suppress("DEPRECATION_ERROR")
                 val installed = feature.install(this, configure)
                 registry.put(feature.key, installed)
-                insertPhaseBefore(ApplicationCallPipeline.Features, FeatureConfigPhase)
-                intercept(FeatureConfigPhase) {
+                intercept(ApplicationCallPipeline.Setup) {
                     call.attributes.put(feature.configKey, configure)
                 }
                 //environment.log.trace("`${feature.name}` feature was installed successfully.")
