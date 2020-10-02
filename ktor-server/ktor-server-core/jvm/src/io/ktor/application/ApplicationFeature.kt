@@ -15,6 +15,7 @@ import kotlinx.coroutines.*
  * @param TConfiguration is the type for the configuration object for this Feature
  * @param TFeature is the type for the instance of the Feature object
  */
+// TODO: remove install function from here and move to new `StaticConfigApplicationFeature`
 @Suppress("AddVarianceModifier")
 public interface ApplicationFeature<in TPipeline : Pipeline<*, ApplicationCall>, out TConfiguration : Any, TFeature : Any> {
     /**

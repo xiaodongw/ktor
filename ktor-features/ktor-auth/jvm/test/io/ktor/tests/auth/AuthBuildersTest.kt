@@ -395,7 +395,7 @@ class AuthBuildersTest {
     }
 
     @Test
-    fun testModifyingAuthenticationIndependentSubroutes() = withTestApplication {
+    fun testModifyingAuthenticationIndependentSubRoutes() = withTestApplication {
         application.authentication {}
 
         application.routing {
