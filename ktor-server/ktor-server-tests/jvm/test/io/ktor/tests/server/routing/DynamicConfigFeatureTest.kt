@@ -16,6 +16,101 @@ import kotlin.test.*
 class DynamicConfigFeatureTest {
 
     @Test
+    fun testFeatureInstalledTopLevel() = withTestApplication {
+        val callbackResults = mutableListOf<String>()
+        val receiveCallbackResults = mutableListOf<String>()
+        val sendCallbackResults = mutableListOf<String>()
+        val allCallbacks = setOf(callbackResults, receiveCallbackResults, sendCallbackResults)
+
+        application.install(TestFeature) {
+            name = "foo"
+            desc = "test feature"
+            pipelineCallback = { callbackResults.add(it) }
+            receivePipelineCallback = { receiveCallbackResults.add(it) }
+            sendPipelineCallback = { sendCallbackResults.add(it) }
+        }
+
+        application.routing {
+            route("root") {
+                get {
+                    call.respond(HttpStatusCode.OK)
+                }
+
+                route("feature1") {
+                    config(TestFeature) { name = "bar" }
+
+                    get {
+                        call.respond(HttpStatusCode.OK)
+                    }
+                }
+
+                route("feature2") {
+                    config(TestFeature) { name = "baz" }
+
+                    get {
+                        call.respond(HttpStatusCode.OK)
+                    }
+                }
+            }
+
+            handle {
+                call.respond(HttpStatusCode.OK)
+            }
+        }
+
+        on("making get request to /root") {
+            val result = handleRequest {
+                uri = "/root"
+                method = HttpMethod.Get
+            }
+            it("should be handled") {
+                assertTrue(result.requestHandled)
+            }
+            it("callback should be invoked") {
+                allCallbacks.forEach {
+                    assertEquals(1, it.size)
+                    assertEquals("foo test feature", it[0])
+                    it.clear()
+                }
+            }
+        }
+
+        on("making get request to /root/feature1") {
+            val result = handleRequest {
+                uri = "/root/feature1"
+                method = HttpMethod.Get
+            }
+            it("should be handled") {
+                assertTrue(result.requestHandled)
+            }
+            it("callback should be invoked") {
+                allCallbacks.forEach {
+                    assertEquals(1, it.size)
+                    assertEquals("bar test feature", it[0])
+                    it.clear()
+                }
+            }
+        }
+
+        on("making get request to /root/feature2") {
+            val result = handleRequest {
+                uri = "/root/feature2"
+                method = HttpMethod.Get
+            }
+            it("should be handled") {
+                assertTrue(result.requestHandled)
+            }
+            it("callback should be invoked") {
+                allCallbacks.forEach {
+                    assertEquals(1, it.size)
+                    assertEquals("baz test feature", it[0])
+                    it.clear()
+                }
+            }
+        }
+    }
+
+    @Test
     fun testFeatureInstalledInRoutingScope() = withTestApplication {
         val callbackResults = mutableListOf<String>()
         val receiveCallbackResults = mutableListOf<String>()
