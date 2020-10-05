@@ -57,8 +57,13 @@ public fun <P : Pipeline<*, ApplicationCall>, B : Any, F : Any> P.install(
     when (val installedFeature = registry.getOrNull(feature.key)) {
         null -> {
             try {
-                @Suppress("DEPRECATION_ERROR")
-                val installed = feature.install(this, configure)
+                // dynamic feature needs to be installed into routing, because only routing will have all interceptors
+                @Suppress("UNCHECKED_CAST")
+                val installPipeline = when (this) {
+                    is Application -> routing {} as P
+                    else -> this
+                }
+                val installed = feature.install(installPipeline)
                 registry.put(feature.key, installed)
                 intercept(ApplicationCallPipeline.Setup) {
                     call.attributes.put(feature.configKey, configure)

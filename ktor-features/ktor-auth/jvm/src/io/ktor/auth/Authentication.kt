@@ -121,7 +121,7 @@ public class Authentication {
     /**
      * Installable feature for [Authentication].
      */
-    public companion object Feature : DynamicConfigFeature<Application, Configuration, Authentication> {
+    public companion object Feature : DynamicConfigFeature<ApplicationCallPipeline, Configuration, Authentication> {
         /**
          * Authenticate phase in that authentication procedures are executed.
          * Please note that referring to the phase is only possible *after* feature installation.
@@ -138,7 +138,7 @@ public class Authentication {
 
         override val key: AttributeKey<Authentication> = AttributeKey("Authentication")
 
-        override fun install(pipeline: Application): Authentication {
+        override fun install(pipeline: ApplicationCallPipeline): Authentication {
             return Authentication()
         }
     }

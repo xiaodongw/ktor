@@ -20,7 +20,7 @@ class DynamicConfigFeatureTest {
         val callbackResults = mutableListOf<String>()
         val receiveCallbackResults = mutableListOf<String>()
         val sendCallbackResults = mutableListOf<String>()
-        val allCallbacks = setOf(callbackResults, receiveCallbackResults, sendCallbackResults)
+        val allCallbacks = listOf(callbackResults, receiveCallbackResults, sendCallbackResults)
 
         application.install(TestFeature) {
             name = "foo"
@@ -32,36 +32,37 @@ class DynamicConfigFeatureTest {
 
         application.routing {
             route("root") {
-                get {
-                    call.respond(HttpStatusCode.OK)
+                handle {
+                    call.respond(call.receive<String>())
                 }
 
                 route("feature1") {
                     config(TestFeature) { name = "bar" }
 
-                    get {
-                        call.respond(HttpStatusCode.OK)
+                    handle {
+                        call.respond(call.receive<String>())
                     }
                 }
 
                 route("feature2") {
                     config(TestFeature) { name = "baz" }
 
-                    get {
-                        call.respond(HttpStatusCode.OK)
+                    handle {
+                        call.respond(call.receive<String>())
                     }
                 }
             }
 
             handle {
-                call.respond(HttpStatusCode.OK)
+                call.respond(call.receive<String>())
             }
         }
 
         on("making get request to /root") {
             val result = handleRequest {
                 uri = "/root"
-                method = HttpMethod.Get
+                method = HttpMethod.Post
+                setBody("test")
             }
             it("should be handled") {
                 assertTrue(result.requestHandled)
@@ -78,7 +79,8 @@ class DynamicConfigFeatureTest {
         on("making get request to /root/feature1") {
             val result = handleRequest {
                 uri = "/root/feature1"
-                method = HttpMethod.Get
+                method = HttpMethod.Post
+                setBody("test")
             }
             it("should be handled") {
                 assertTrue(result.requestHandled)
@@ -95,7 +97,8 @@ class DynamicConfigFeatureTest {
         on("making get request to /root/feature2") {
             val result = handleRequest {
                 uri = "/root/feature2"
-                method = HttpMethod.Get
+                method = HttpMethod.Post
+                setBody("test")
             }
             it("should be handled") {
                 assertTrue(result.requestHandled)
@@ -115,7 +118,7 @@ class DynamicConfigFeatureTest {
         val callbackResults = mutableListOf<String>()
         val receiveCallbackResults = mutableListOf<String>()
         val sendCallbackResults = mutableListOf<String>()
-        val allCallbacks = setOf(callbackResults, receiveCallbackResults, sendCallbackResults)
+        val allCallbacks = listOf(callbackResults, receiveCallbackResults, sendCallbackResults)
 
         application.routing {
             route("root-no-feature") {
@@ -128,31 +131,33 @@ class DynamicConfigFeatureTest {
                         sendPipelineCallback = { sendCallbackResults.add(it) }
                     }
 
-                    get {
-                        call.respond(HttpStatusCode.OK)
+                    handle {
+                        call.respond(call.receive<String>())
                     }
 
                     route("inner") {
                         route("new-feature") {
                             config(TestFeature, { name = "bar" })
 
-                            get("inner") {
-                                call.respond(HttpStatusCode.OK)
+                            route("inner") {
+                                handle {
+                                    call.respond(call.receive<String>())
+                                }
                             }
 
                             handle {
-                                call.respond(HttpStatusCode.OK)
+                                call.respond(call.receive<String>())
                             }
                         }
 
                         handle {
-                            call.respond(HttpStatusCode.OK)
+                            call.respond(call.receive<String>())
                         }
                     }
                 }
 
                 handle {
-                    call.respond(HttpStatusCode.OK)
+                    call.respond(call.receive<String>())
                 }
             }
         }
@@ -160,7 +165,8 @@ class DynamicConfigFeatureTest {
         on("making get request to /root-no-feature") {
             val result = handleRequest {
                 uri = "/root-no-feature"
-                method = HttpMethod.Get
+                method = HttpMethod.Post
+                setBody("test")
             }
             it("should be handled") {
                 assertTrue(result.requestHandled)
@@ -175,7 +181,8 @@ class DynamicConfigFeatureTest {
         on("making get request to /root-no-feature/first-feature") {
             val result = handleRequest {
                 uri = "/root-no-feature/first-feature"
-                method = HttpMethod.Get
+                method = HttpMethod.Post
+                setBody("test")
             }
             it("should be handled") {
                 assertTrue(result.requestHandled)
@@ -192,7 +199,8 @@ class DynamicConfigFeatureTest {
         on("making get request to /root-no-feature/first-feature/inner") {
             val result = handleRequest {
                 uri = "/root-no-feature/first-feature/inner"
-                method = HttpMethod.Get
+                method = HttpMethod.Post
+                setBody("test")
             }
             it("should be handled") {
                 assertTrue(result.requestHandled)
@@ -209,7 +217,8 @@ class DynamicConfigFeatureTest {
         on("making get request to /root-no-feature/first-feature/inner/new-feature") {
             val result = handleRequest {
                 uri = "/root-no-feature/first-feature/inner/new-feature"
-                method = HttpMethod.Get
+                method = HttpMethod.Post
+                setBody("test")
             }
             it("should be handled") {
                 assertTrue(result.requestHandled)
@@ -226,7 +235,8 @@ class DynamicConfigFeatureTest {
         on("making get request to /root-no-feature/first-feature/inner/new-feature/inner") {
             val result = handleRequest {
                 uri = "/root-no-feature/first-feature/inner/new-feature/inner"
-                method = HttpMethod.Get
+                method = HttpMethod.Post
+                setBody("test")
             }
             it("should be handled") {
                 assertTrue(result.requestHandled)
@@ -235,6 +245,99 @@ class DynamicConfigFeatureTest {
                 allCallbacks.forEach {
                     assertEquals(1, it.size)
                     assertEquals("bar test feature", it[0])
+                    it.clear()
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testFeatureReuseConfig() = withTestApplication {
+        val callbackResults = mutableListOf<String>()
+        val receiveCallbackResults = mutableListOf<String>()
+        val sendCallbackResults = mutableListOf<String>()
+        val allCallbacks = listOf(callbackResults, receiveCallbackResults, sendCallbackResults)
+
+        application.routing {
+            route("root") {
+                install(TestFeature) {
+                    name = "foo"
+                    desc = "test feature"
+                    pipelineCallback = { callbackResults.add(it) }
+                    receivePipelineCallback = { receiveCallbackResults.add(it) }
+                    sendPipelineCallback = { sendCallbackResults.add(it) }
+                }
+                route("feature1") {
+                    config(TestFeature, { desc = "new desc" })
+
+                    handle {
+                        call.respond(call.receive<String>())
+                    }
+
+                    route("feature2") {
+                        config(TestFeature, { name = "bar" })
+
+                        handle {
+                            call.respond(call.receive<String>())
+                        }
+                    }
+                }
+
+                handle {
+                    call.respond(call.receive<String>())
+                }
+            }
+        }
+
+        on("making get request to /root") {
+            val result = handleRequest {
+                uri = "/root"
+                method = HttpMethod.Post
+                setBody("test")
+            }
+            it("should be handled") {
+                assertTrue(result.requestHandled)
+            }
+            it("callback should be invoked") {
+                allCallbacks.forEach {
+                    assertEquals(1, it.size)
+                    assertEquals("foo test feature", it[0])
+                    it.clear()
+                }
+            }
+        }
+
+        on("making get request to /root/feature1") {
+            val result = handleRequest {
+                uri = "/root/feature1"
+                method = HttpMethod.Post
+                setBody("test")
+            }
+            it("should be handled") {
+                assertTrue(result.requestHandled)
+            }
+            it("callback should be invoked") {
+                allCallbacks.forEach {
+                    assertEquals(1, it.size)
+                    assertEquals("foo new desc", it[0])
+                    it.clear()
+                }
+            }
+        }
+
+        on("making get request to /root/feature1/feature2") {
+            val result = handleRequest {
+                uri = "/root/feature1/feature2"
+                method = HttpMethod.Post
+                setBody("test")
+            }
+            it("should be handled") {
+                assertTrue(result.requestHandled)
+            }
+            it("callback should be invoked") {
+                allCallbacks.forEach {
+                    assertEquals(1, it.size)
+                    assertEquals("bar new desc", it[0])
                     it.clear()
                 }
             }
