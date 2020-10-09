@@ -531,7 +531,50 @@ public abstract class SustainabilityTestSuite<TEngine : ApplicationEngine, TConf
                 "HTTP/1.0 400"
             )
 
-            assertTrue(expected.any { result.startsWith(it) },"Invalid response: $result")
+            assertTrue(expected.any { result.startsWith(it) }, "Invalid response: $result")
+        }
+    }
+
+    @Test
+    fun testInvalidTransferEncoding() {
+        createAndStartServer {
+            get("/") {
+                call.respondText("Hello, world!", ContentType.Text.Html)
+            }
+            post("/"){
+                val post = call.receiveParameters()
+                call.respond("$post")
+            }
+        }
+
+        val messages = listOf(
+            "POST / HTTP/1.1\r\n",
+            "Host:localhost\r\n",
+            "Connection: close\r\n",
+            "Content-Length: 1\r\n",
+            "Content-Type: application/x-www-form-urlencoded\r\n",
+            "Transfer-Encoding: chunked\r\n",
+            "Transfer-Encoding: smuggle\r\n",
+            "\r\n",
+            "3\r\n",
+            "a=1\r\n",
+            "0\r\n",
+            "\r\n"
+        )
+
+        socket {
+            getOutputStream().writer().also { writer ->
+                messages.forEach { writer.write(it) }
+                writer.flush()
+            }
+
+            val result = getInputStream().reader().readLines().joinToString("\n")
+            val expected = listOf(
+                "HTTP/1.1 400",
+                "HTTP/1.0 400"
+            )
+
+            assertTrue(expected.any { result.startsWith(it) }, "Invalid response: $result")
         }
     }
 }
