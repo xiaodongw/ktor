@@ -6,8 +6,6 @@ apiValidation {
         'ktor-client-tests',
         'ktor-client-js',
         'ktor-client-json-tests',
-        'ktor-client-curl',
-        'ktor-client-ios',
         'ktor-client',
         'ktor-client-features',
         'ktor-client-benchmarks',

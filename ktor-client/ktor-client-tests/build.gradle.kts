@@ -86,35 +86,6 @@ kotlin.sourceSets {
             api(project(":ktor-client:ktor-client-js"))
         }
     }
-
-    if (!ideaActive) {
-        listOf("linuxX64Test", "mingwX64Test", "macosX64Test").map { getByName(it) }.forEach {
-            it.dependencies {
-                api(project(":ktor-client:ktor-client-curl"))
-            }
-        }
-
-        if (!osName.startsWith("Windows")) {
-            listOf("linuxX64Test", "macosX64Test", "iosX64Test").map { getByName(it) }.forEach {
-                it.dependencies {
-                    api(project(":ktor-client:ktor-client-cio"))
-                }
-            }
-        }
-        listOf("iosX64Test", "macosX64Test").map { getByName(it) }.forEach {
-            it.dependencies {
-                // api(project(":ktor-client:ktor-client-ios"))
-            }
-        }
-    } else {
-        posixTest {
-            dependencies {
-                // api(project(":ktor-client:ktor-client-ios"))
-                api(project(":ktor-client:ktor-client-curl"))
-                api(project(":ktor-client:ktor-client-cio"))
-            }
-        }
-    }
 }
 
 val startTestServer = task<KtorTestServer>("startTestServer") {
@@ -133,20 +104,8 @@ val testTasks = mutableListOf(
     "jsLegacyNodeTest",
     "jsIrNodeTest",
     "jsLegacyBrowserTest",
-    "jsIrBrowserTest",
-
-    "posixTest",
-    "darwinTest"
+    "jsIrBrowserTest"
 )
-
-if (!ideaActive) {
-    testTasks += listOf(
-        "macosX64Test",
-        "linuxX64Test",
-        "iosX64Test",
-        "mingwX64Test"
-    )
-}
 
 rootProject.allprojects {
     if (path.contains("ktor-client")) {
