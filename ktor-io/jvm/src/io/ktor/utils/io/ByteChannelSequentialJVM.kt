@@ -113,24 +113,28 @@ public open class ByteChannelSequentialJVM(
         return count
     }
 
-    private fun tryReadAvailable(dst: ByteBuffer): Int {
-        val closed = closed
-        val closedCause = closedCause
-
-        return when {
-            closedCause != null -> throw closedCause
-            closed -> {
-                val count = readable.readAvailable(dst)
-
-                if (count != 0) {
-                    afterRead(count)
-                    count
-                } else {
-                    -1
-                }
+    private fun tryReadAvailable(dst: ByteBuffer): Int = when {
+        closedCause != null -> throw closedCause!!
+        availableForRead > 0 -> {
+            if (flushBuffer.isNotEmpty) {
+                prepareFlushedBytes()
             }
-            else -> readable.readAvailable(dst).also { afterRead(it) }
+
+            val count = readable.readAvailable(dst)
+            afterRead(count)
+            count
         }
+        closed -> {
+            val count = readable.readAvailable(dst)
+
+            if (count != 0) {
+                afterRead(count)
+                count
+            } else {
+                -1
+            }
+        }
+        else -> 0
     }
 
     @Deprecated("Binary compatibility.", level = DeprecationLevel.HIDDEN)

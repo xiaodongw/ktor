@@ -85,11 +85,7 @@ internal open class ByteBufferChannel(
     )
     override var writeByteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
         set(newOrder) {
-            if (field != newOrder) {
-                field = newOrder
-                @Suppress("DEPRECATION_ERROR")
-                joining?.delegatedTo?.writeByteOrder = newOrder
-            }
+            error("Setting byte order is no longer supported. Read/write in big endian and use reverseByteOrder() extensions.")
         }
 
     override val availableForRead: Int
@@ -604,15 +600,16 @@ internal open class ByteBufferChannel(
     override suspend fun readAvailable(dst: ByteArray, offset: Int, length: Int): Int {
         val consumed = readAsMuchAsPossible(dst, offset, length)
 
-        if (consumed == 0 && closed != null) {
-            if (state.capacity.flush()) {
-                return readAsMuchAsPossible(dst, offset, length)
-            } else {
-                return -1
-            }
-        } else if (consumed > 0 || length == 0) return consumed
-
-        return readAvailableSuspend(dst, offset, length)
+        return when {
+            consumed == 0 && closed != null ->
+                if (state.capacity.flush()) {
+                    readAsMuchAsPossible(dst, offset, length)
+                } else {
+                    -1
+                }
+            consumed > 0 || length == 0 -> consumed
+            else -> readAvailableSuspend(dst, offset, length)
+        }
     }
 
     override suspend fun readAvailable(dst: ByteBuffer): Int {
@@ -2458,16 +2455,8 @@ internal open class ByteBufferChannel(
         }
     }
 
-    private fun newBuffer(): ReadWriteBufferState.Initial {
-        val result = pool.borrow()
-
-        @Suppress("DEPRECATION_ERROR")
-        result.readBuffer.order(readByteOrder.nioOrder)
-        @Suppress("DEPRECATION_ERROR")
-        result.writeBuffer.order(writeByteOrder.nioOrder)
-        result.capacity.resetForWrite()
-
-        return result
+    private fun newBuffer(): ReadWriteBufferState.Initial = pool.borrow().apply {
+        capacity.resetForWrite()
     }
 
     private fun releaseBuffer(buffer: ReadWriteBufferState.Initial) {

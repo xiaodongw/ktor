@@ -13,7 +13,10 @@ public fun ByteReadChannel(content: ByteBuffer): ByteReadChannel {
     val head = IoBuffer(content).apply {
         commitWritten(content.remaining())
     }
-    return ByteChannelSequentialJVM(head, autoFlush = false)
+
+    return ByteChannelSequentialJVM(head, autoFlush = false).apply {
+        close()
+    }
 }
 
 /**
