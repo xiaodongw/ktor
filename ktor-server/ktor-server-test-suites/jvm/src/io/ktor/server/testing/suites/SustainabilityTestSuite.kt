@@ -559,8 +559,11 @@ public abstract class SustainabilityTestSuite<TEngine : ApplicationEngine, TConf
                 startServer(server)
 
                 withUrl(if (phase == ApplicationCallPipeline.ApplicationPhase.Fallback) "/url" else "/") {
-                    assertEquals(HttpStatusCode.InternalServerError, status, "Failed in phase $phase")
-                    assertEquals(exceptions.size, 1)
+                    if (phase == ApplicationCallPipeline.ApplicationPhase.Fallback)
+                        assertEquals(HttpStatusCode.NotFound, status, "Failed in phase $phase")
+                    else
+                        assertEquals(HttpStatusCode.InternalServerError, status, "Failed in phase $phase")
+                    assertEquals(exceptions.size, 1, "Failed in phase $phase")
                     assertEquals(exceptions[0].message, "Failed in phase $phase")
                     exceptions.clear()
                 }
@@ -598,7 +601,7 @@ public abstract class SustainabilityTestSuite<TEngine : ApplicationEngine, TConf
                     { method = HttpMethod.Post; body = "body" }
                 ) {
                     assertEquals(HttpStatusCode.InternalServerError, status, "Failed in phase $phase")
-                    assertEquals(exceptions.size, 1)
+                    assertEquals(exceptions.size, 1, "Failed in phase $phase")
                     assertEquals(exceptions[0].message, "Failed in phase $phase")
                     exceptions.clear()
                 }
@@ -639,7 +642,7 @@ public abstract class SustainabilityTestSuite<TEngine : ApplicationEngine, TConf
                 withUrl("/", { intercepted = false }) {
                     val text = receive<String>()
                     assertEquals(HttpStatusCode.InternalServerError, status, "Failed in phase $phase")
-                    assertEquals(exceptions.size, 1)
+                    assertEquals(exceptions.size, 1, "Failed in phase $phase")
                     assertEquals(exceptions[0].message, "Failed in phase $phase")
                     exceptions.clear()
                 }
@@ -672,7 +675,7 @@ public abstract class SustainabilityTestSuite<TEngine : ApplicationEngine, TConf
 
         withUrl("/req") {
             assertEquals(HttpStatusCode.InternalServerError, status, "Failed in engine pipeline")
-            assertEquals(exceptions.size, 1)
+            assertEquals(exceptions.size, 1, "Failed in phase $phase")
             assertEquals(exceptions[0].message, "Failed in engine pipeline")
             exceptions.clear()
         }
