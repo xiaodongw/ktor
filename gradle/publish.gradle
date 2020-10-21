@@ -1,5 +1,6 @@
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 apply from: project.rootProject.file('gradle/pom.gradle')
 
@@ -134,6 +135,31 @@ class PublishWithRetryTask extends DefaultTask {
         }
     }
 }
+
+
+def signingKeyId = findProperty("signingKeyId")
+def signingKey = findProperty("signingKey")
+def signingPassword = findProperty("signingPassword")
+
+if (signingKeyId != null) {
+    println "Signing artifacts before publishing"
+
+    signing {
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+        tasks.withType(PublishToMavenRepository.class).forEach { Task task
+            sign task
+        }
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            }
+        }
+    }
+}
+
 
 task publishWithRetry(type: PublishWithRetryTask) {
     description "Publish maven publications with retry"
