@@ -4,6 +4,7 @@
 
 package io.ktor.server.testing
 
+import io.ktor.server.engine.*
 import java.io.*
 import java.util.zip.*
 import kotlin.test.*
@@ -48,3 +49,17 @@ internal fun loadTestFile(): File = listOf(
 ).filter { it.exists() }
     .flatMap { it.walkBottomUp().asIterable() }
     .first { it.extension == "kt" }
+
+/**
+ * NC command for the internal server.
+ */
+internal fun <TEngine : ApplicationEngine, TConfiguration : ApplicationEngine.Configuration> EngineTestBase<TEngine, TConfiguration>.nc(
+    vararg lines: String
+): String = socket {
+    getOutputStream().writer().also { writer ->
+        lines.forEach { writer.write(it) }
+        writer.flush()
+    }
+
+    return@socket getInputStream().reader().readLines().joinToString("\n")
+}

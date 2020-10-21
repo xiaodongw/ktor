@@ -48,18 +48,25 @@ public abstract class EngineTestBase<TEngine : ApplicationEngine, TConfiguration
         java.lang.management.ManagementFactory.getRuntimeMXBean().inputArguments.orEmpty()
             .any { "-agentlib:jdwp" in it }
 
-    protected var port: Int = findFreePort()
-    protected var sslPort: Int = findFreePort()
-    protected var server: TEngine? = null
-    protected var callGroupSize: Int = -1
+    var port: Int = findFreePort()
+        protected set
+    var sslPort: Int = findFreePort()
+        protected set
+    var server: TEngine? = null
+        protected set
+    var callGroupSize: Int = -1
         private set
-    protected val exceptions: ArrayList<Throwable> = ArrayList<Throwable>()
-    protected var enableHttp2: Boolean = System.getProperty("enable.http2") == "true"
-    protected var enableSsl: Boolean = System.getProperty("enable.ssl") != "false"
+
+    var enableHttp2: Boolean = System.getProperty("enable.http2") == "true"
+        protected set
+    var enableSsl: Boolean = System.getProperty("enable.ssl") != "false"
+        protected set
+
+    val exceptions: ArrayList<Throwable> = ArrayList<Throwable>()
 
     private val allConnections = CopyOnWriteArrayList<HttpURLConnection>()
 
-    public val testLog: Logger = LoggerFactory.getLogger("EngineTestBase")
+    val testLog: Logger = LoggerFactory.getLogger("EngineTestBase")
 
     @Target(AnnotationTarget.FUNCTION)
     @Retention
@@ -82,12 +89,12 @@ public abstract class EngineTestBase<TEngine : ApplicationEngine, TConfiguration
     }
 
     @get:Rule
-    public val timeoutRule: CoroutinesTimeout by lazy { CoroutinesTimeout.seconds(timeout.toInt()) }
+    val timeoutRule: CoroutinesTimeout by lazy { CoroutinesTimeout.seconds(timeout.toInt()) }
 
-    protected val socketReadTimeout: Int by lazy { TimeUnit.SECONDS.toMillis(timeout).toInt() }
+    val socketReadTimeout: Int by lazy { TimeUnit.SECONDS.toMillis(timeout).toInt() }
 
     @Before
-    public fun setUpBase() {
+    fun setUpBase() {
         val method = this.javaClass.getMethod(test.methodName) ?: fail("Method ${test.methodName} not found")
 
         if (method.isAnnotationPresent(Http2Only::class.java)) {
@@ -275,14 +282,12 @@ public abstract class EngineTestBase<TEngine : ApplicationEngine, TConfiguration
         }
     }
 
-    protected inline fun socket(block: Socket.() -> Unit) {
-        Socket().use { socket ->
-            socket.tcpNoDelay = true
-            socket.soTimeout = socketReadTimeout
-            socket.connect(InetSocketAddress("localhost", port))
+    inline fun <T> socket(block: Socket.() -> T): T = Socket().use { socket ->
+        socket.tcpNoDelay = true
+        socket.soTimeout = socketReadTimeout
+        socket.connect(InetSocketAddress("localhost", port))
 
-            block(socket)
-        }
+        return@use block(socket)
     }
 
     private fun withUrl(
