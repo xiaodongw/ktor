@@ -12,22 +12,29 @@ import io.ktor.http.content.*
 import io.ktor.util.*
 import io.ktor.utils.io.*
 import java.io.*
+import kotlin.reflect.*
 
 /**
  * Sends a [message] as a response
  */
-@Suppress("NOTHING_TO_INLINE")
-public suspend inline fun ApplicationCall.respond(message: Any) {
-    response.pipeline.execute(this, message)
+@OptIn(ExperimentalStdlibApi::class)
+public suspend inline fun <reified T> ApplicationCall.respond(message: T) {
+    response.pipeline.intercept(ApplicationSendPipeline.Before) {
+        call.attributes.put(ResponseTypeAttributeKey, typeOf<T>())
+    }
+    response.pipeline.execute(this, message as Any)
 }
 
 /**
  * Sets [status] and sends a [message] as a response
  */
-@Suppress("NOTHING_TO_INLINE")
-public suspend inline fun ApplicationCall.respond(status: HttpStatusCode, message: Any) {
+@OptIn(ExperimentalStdlibApi::class)
+public suspend inline fun <reified T> ApplicationCall.respond(status: HttpStatusCode, message: T) {
+    response.pipeline.intercept(ApplicationSendPipeline.Before) {
+        call.attributes.put(ResponseTypeAttributeKey, typeOf<T>())
+    }
     response.status(status)
-    response.pipeline.execute(this, message)
+    response.pipeline.execute(this, message as Any)
 }
 
 /**

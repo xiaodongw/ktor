@@ -378,7 +378,7 @@ class SerializationTest {
             get("/array") {
                 call.respond(buildJsonObject {
                     put("a", "1")
-                    put("b",  buildJsonArray {
+                    put("b", buildJsonArray {
                         add("c")
                         add(JsonPrimitive(2))
                     })
@@ -416,6 +416,28 @@ class SerializationTest {
             assertEquals("""{"a":"1",null:"2","b":null}""", it.response.content)
         }
     }
+
+    @Test
+    fun testRespondPolymorphic(): Unit = withTestApplication {
+        application.install(ContentNegotiation) {
+            register(ContentType.Application.Json, SerializationConverter(Json))
+        }
+        application.routing {
+            get("/sealed") {
+                call.respond(listOf(TestSealed.A("valueA"), TestSealed.B("valueB")))
+            }
+        }
+
+        handleRequest(HttpMethod.Get, "/sealed") {
+            addHeader("Accept", "application/json")
+        }.let { call ->
+            assertEquals(HttpStatusCode.OK, call.response.status())
+            assertEquals(
+                """[{"type":"io.ktor.tests.serialization.TestSealed.A","valueA":"valueA"},{"type":"io.ktor.tests.serialization.TestSealed.B","valueB":"valueB"}]""",
+                call.response.content
+            )
+        }
+    }
 }
 
 @Serializable
@@ -423,6 +445,15 @@ data class MyEntity(val id: Int, val name: String, val children: List<ChildEntit
 
 @Serializable
 data class ChildEntity(val item: String, val quantity: Int)
+
+@Serializable
+sealed class TestSealed {
+    @Serializable
+    data class A(val valueA: String) : TestSealed()
+
+    @Serializable
+    data class B(val valueB: String) : TestSealed()
+}
 
 private fun SerializationConverter(): SerializationConverter =
     SerializationConverter(DefaultJson)
